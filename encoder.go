@@ -10,16 +10,15 @@ import (
 	"github.com/yanzay/schemaclient"
 )
 
-type Encoder interface {
-	Encode(subject string, v interface{}) ([]byte, error)
-	Decode(subject string, data []byte, vPtr interface{}) error
-}
+var magicBytes = []byte{0}
 
+// AvroEncoder is avro encoder for NATS messaging system
 type AvroEncoder struct {
 	primitiveSchemas map[string]avro.Schema
 	schemaRegistry   schemaclient.SchemaRegistryClient
 }
 
+// NewAvroEncoder creates new encoder
 func NewAvroEncoder(schemaURL string) *AvroEncoder {
 	primitiveSchemas := make(map[string]avro.Schema)
 	primitiveSchemas["Null"] = createPrimitiveSchema("null")
@@ -37,8 +36,7 @@ func NewAvroEncoder(schemaURL string) *AvroEncoder {
 	}
 }
 
-var magic_bytes = []byte{0}
-
+// Encode implements Encoder interface
 func (ae *AvroEncoder) Encode(subject string, obj interface{}) ([]byte, error) {
 	if obj == nil {
 		return nil, nil
@@ -51,7 +49,7 @@ func (ae *AvroEncoder) Encode(subject string, obj interface{}) ([]byte, error) {
 	}
 
 	buffer := &bytes.Buffer{}
-	_, err = buffer.Write(magic_bytes)
+	_, err = buffer.Write(magicBytes)
 	if err != nil {
 		return nil, err
 	}
@@ -78,23 +76,23 @@ func (ae *AvroEncoder) Encode(subject string, obj interface{}) ([]byte, error) {
 	return buffer.Bytes(), nil
 }
 
+// Decode implements Encoder interface
 func (ae *AvroEncoder) Decode(subject string, data []byte, vPtr interface{}) error {
 	if data == nil {
 		return nil
-	} else {
-		if data[0] != 0 {
-			return errors.New("Unknown magic byte!")
-		}
-		id := int32(binary.BigEndian.Uint32(data[1:]))
-		schema, err := ae.schemaRegistry.GetByID(id)
-		if err != nil {
-			return err
-		}
-
-		reader := avro.NewSpecificDatumReader()
-		reader.SetSchema(schema)
-		return reader.Read(vPtr, avro.NewBinaryDecoder(data[5:]))
 	}
+	if data[0] != 0 {
+		return errors.New("Unknown magic byte!")
+	}
+	id := int32(binary.BigEndian.Uint32(data[1:]))
+	schema, err := ae.schemaRegistry.GetByID(id)
+	if err != nil {
+		return err
+	}
+
+	reader := avro.NewSpecificDatumReader()
+	reader.SetSchema(schema)
+	return reader.Read(vPtr, avro.NewBinaryDecoder(data[5:]))
 }
 
 func (ae *AvroEncoder) getSchema(obj interface{}) avro.Schema {

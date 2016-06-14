@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	schemaRepositoryUrl = "http://localhost:8081"
+	schemaRepositoryURL = "http://localhost:8081"
 	rawMetricsSchema    = `{"namespace": "metrics","type": "record","name": "Timings","fields": [{"name": "id", "type": "long"},{"name": "timings",  "type": {"type":"array", "items": "long"} }]}`
 )
 
@@ -24,7 +24,7 @@ func (t *Metric) Schema() avro.Schema {
 }
 
 func TestEncoderDecoder(t *testing.T) {
-	encoder := NewAvroEncoder(schemaRepositoryUrl)
+	encoder := NewAvroEncoder(schemaRepositoryURL)
 
 	_, err := avro.ParseSchema(rawMetricsSchema)
 	assert(t, err, nil)
@@ -47,7 +47,7 @@ func TestEncoderDecoder(t *testing.T) {
 
 func TestNatsIntegration(t *testing.T) {
 	nc, _ := nats.Connect(nats.DefaultURL)
-	encoder := NewAvroEncoder(schemaRepositoryUrl)
+	encoder := NewAvroEncoder(schemaRepositoryURL)
 	nats.RegisterEncoder("avro", encoder)
 	c, err := nats.NewEncodedConn(nc, "avro")
 	assert(t, err, nil)
