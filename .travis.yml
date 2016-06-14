@@ -1,0 +1,16 @@
+language: go
+
+go:
+  - 1.6
+  - tip
+
+install:
+  - go get -u github.com/yanzay/wednesday
+  - wednesday &
+  - go get -u github.com/nats-io/gnatsd
+  - gnatsd &
+  - go get -u github.com/elodina/go-avro
+  - go get -u github.com/yanzay/schemaclient
+  - go get -u github.com/nats-io/nats
+
+script: go test -v -race
