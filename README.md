@@ -2,3 +2,12 @@
 
 # avronats
 Go Avro Encoder for NATS messaging system.
+
+## How to use
+```
+  nc, _ := nats.Connect(nats.DefaultURL)
+  encoder := avronats.NewAvroEncoder(schemaRegistryURL)
+  nats.RegisterEncoder("avro", encoder)
+  c, err := nats.NewEncodedConn(nc, "avro")
+  //...
+```
