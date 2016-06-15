@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
+	"sync"
 
 	avro "github.com/elodina/go-avro"
 	"github.com/yanzay/schemaclient"
@@ -16,6 +17,7 @@ var magicBytes = []byte{0}
 type AvroEncoder struct {
 	primitiveSchemas map[string]avro.Schema
 	schemaRegistry   schemaclient.SchemaRegistryClient
+	buffers          sync.Pool
 }
 
 // NewAvroEncoder creates new encoder
@@ -29,10 +31,16 @@ func NewAvroEncoder(schemaURL string) *AvroEncoder {
 	primitiveSchemas["Double"] = createPrimitiveSchema("double")
 	primitiveSchemas["String"] = createPrimitiveSchema("string")
 	primitiveSchemas["Bytes"] = createPrimitiveSchema("bytes")
+	buffers := sync.Pool{
+		New: func() interface{} {
+			return &bytes.Buffer{}
+		},
+	}
 
 	return &AvroEncoder{
 		schemaRegistry:   schemaclient.NewCachedSchemaRegistryClient(schemaURL),
 		primitiveSchemas: primitiveSchemas,
+		buffers:          buffers,
 	}
 }
 
@@ -48,7 +56,8 @@ func (ae *AvroEncoder) Encode(subject string, obj interface{}) ([]byte, error) {
 		return nil, err
 	}
 
-	buffer := &bytes.Buffer{}
+	// buffer := &bytes.Buffer{}
+	buffer := ae.buffers.Get().(*bytes.Buffer)
 	_, err = buffer.Write(magicBytes)
 	if err != nil {
 		return nil, err
@@ -61,19 +70,16 @@ func (ae *AvroEncoder) Encode(subject string, obj interface{}) ([]byte, error) {
 	}
 
 	enc := avro.NewBinaryEncoder(buffer)
-	var writer avro.DatumWriter
-	if _, ok := obj.(*avro.GenericRecord); ok {
-		writer = avro.NewGenericDatumWriter()
-	} else {
-		writer = avro.NewSpecificDatumWriter()
-	}
+	var writer = avro.NewSpecificDatumWriter()
 	writer.SetSchema(schema)
 	err = writer.Write(obj, enc)
 	if err != nil {
 		return nil, err
 	}
-
-	return buffer.Bytes(), nil
+	res := buffer.Bytes()
+	buffer.Reset()
+	ae.buffers.Put(buffer)
+	return res, nil
 }
 
 // Decode implements Encoder interface

@@ -12,5 +12,6 @@ install:
   - go get -u github.com/elodina/go-avro
   - go get -u github.com/yanzay/schemaclient
   - go get -u github.com/nats-io/nats
+  - go get -u github.com/golang/protobuf/proto
 
 script: go test -v -race
