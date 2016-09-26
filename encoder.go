@@ -17,7 +17,7 @@ var magicBytes = []byte{0}
 type AvroEncoder struct {
 	primitiveSchemas map[string]avro.Schema
 	schemaRegistry   schemaclient.SchemaRegistryClient
-	buffers          sync.Pool
+	buffers          *sync.Pool
 }
 
 // NewAvroEncoder creates new encoder
@@ -31,7 +31,7 @@ func NewAvroEncoder(schemaURL string) *AvroEncoder {
 	primitiveSchemas["Double"] = createPrimitiveSchema("double")
 	primitiveSchemas["String"] = createPrimitiveSchema("string")
 	primitiveSchemas["Bytes"] = createPrimitiveSchema("bytes")
-	buffers := sync.Pool{
+	buffers := &sync.Pool{
 		New: func() interface{} {
 			return &bytes.Buffer{}
 		},
@@ -56,7 +56,6 @@ func (ae *AvroEncoder) Encode(subject string, obj interface{}) ([]byte, error) {
 		return nil, err
 	}
 
-	// buffer := &bytes.Buffer{}
 	buffer := ae.buffers.Get().(*bytes.Buffer)
 	_, err = buffer.Write(magicBytes)
 	if err != nil {
