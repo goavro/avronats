@@ -6,7 +6,7 @@ go:
   - tip
 
 install:
-  - go get -u github.com/goarvo/wednesday
+  - go get -u github.com/goavro/wednesday
   - wednesday &
   - go get -u github.com/nats-io/gnatsd
   - gnatsd &
