@@ -5,12 +5,12 @@ go:
   - tip
 
 install:
-  - go get -u github.com/yanzay/wednesday
+  - go get -u github.com/goarvo/wednesday
   - wednesday &
   - go get -u github.com/nats-io/gnatsd
   - gnatsd &
   - go get -u github.com/elodina/go-avro
-  - go get -u github.com/yanzay/schemaclient
+  - go get -u github.com/goavro/schemaclient
   - go get -u github.com/nats-io/nats
   - go get -u github.com/golang/protobuf/proto
 

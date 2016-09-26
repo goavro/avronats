@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/yanzay/avronats.svg?branch=master)](https://travis-ci.org/yanzay/avronats)
+[![Build Status](https://travis-ci.org/goavro/avronats.svg?branch=master)](https://travis-ci.org/goavro/avronats)
 
 # avronats
 Go Avro Encoder for NATS messaging system.

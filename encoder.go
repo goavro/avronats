@@ -8,7 +8,7 @@ import (
 	"sync"
 
 	avro "github.com/elodina/go-avro"
-	"github.com/yanzay/schemaclient"
+	"github.com/goavro/schemaclient"
 )
 
 var magicBytes = []byte{0}
