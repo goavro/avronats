@@ -18,7 +18,7 @@ const (
 var parsedSchema, _ = avro.ParseSchema(rawMetricsSchema)
 
 type Metric struct {
-	ID      int64   `protobuf:"varint,1,opt,name=id" json:"id,omitempty"`
+	Id      int64   `protobuf:"varint,1,opt,name=id" json:"id,omitempty"`
 	Timings []int64 `protobuf:"varint,2,rep,name=timings" json:"timings,omitempty"`
 }
 
